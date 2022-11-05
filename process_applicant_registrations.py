@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 import config as cfg
 
 # define results file
-results = {}
+results = []
+applicant = {}
 
 
 # Functions
@@ -26,14 +27,14 @@ def set_exams(exams):
     for exam in exams:
         if exam == element2:
             # if element 2, set element 3 and 4 to false
-            results[cfg.Header.fields[req_element_3]] = False
-            results[cfg.Header.fields[req_element_4]] = False
+            applicant[cfg.Header.fields[req_element_3]] = False
+            applicant[cfg.Header.fields[req_element_4]] = False
         # if element 3, set element 3 to true
         if exam == element3:
-            results[cfg.Header.fields[req_element_3]] = True
+            applicant[cfg.Header.fields[req_element_3]] = True
         # if element 4, set element 4 to true
         if exam == element4:
-            results[cfg.Header.fields[req_element_4]] = True
+            applicant[cfg.Header.fields[req_element_4]] = True
     return None
 
 # TODO: add logging to script.
@@ -81,31 +82,34 @@ def main():
                 value = ''
             elif name == 'Street Address' and value.find('PO') == -1:
                 # If not a PO Box, add empty PO Box entry
-                results[cfg.Header.fields['PO Box']] = ''
+                applicant[cfg.Header.fields['PO Box']] = ''
             elif name == 'Street Address' and value.find('PO') != -1:
                 # If PO Box, set Street Address(value) to empty string and add PO_BOX
-                results[cfg.Header.fields['PO Box']] = value
+                applicant[cfg.Header.fields['PO Box']] = value
                 value = ''
             elif name == 'Callsign' and value.upper() == 'NOCALL':
                 # If callsign is NOCALL, set Callsign value to empty string and set UPGRADE_LICENSE to False
                 value = ''
-                results[cfg.Header.fields['UPGRADE_LICENSE']] = False
+                applicant[cfg.Header.fields['UPGRADE_LICENSE']] = False
             elif name == 'Callsign' and value.isalnum():
                 # If a callsign was entered, set UPGRADE_LICENSE to True
-                results[cfg.Header.fields['UPGRADE_LICENSE']] = True
+                applicant[cfg.Header.fields['UPGRADE_LICENSE']] = True
             elif name == 'Exams':
                 set_exams(value.split(', '))
 
             print('=========================')
             print(f'Name: {name}, Value: {value}')
 
-            results[cfg.Header.fields[name]] = value
-    print('Print results')
-    print(results)
+            applicant[cfg.Header.fields[name]] = value
+    print('Print applicant data')
+    print(applicant)
+    print('Add application to results list')
+    results.append(applicant)
 
     # Logout of mailbox
     mb.logout()
-
+    print('Results List')
+    print(results)
 
 if __name__ == '__main__':
     main()
