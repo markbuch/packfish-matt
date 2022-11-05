@@ -2,7 +2,7 @@ from imap_tools import MailBox, AND
 from bs4 import BeautifulSoup
 import config as cfg
 
-# define results file
+# define global variables
 results = []
 applicant = {}
 
@@ -36,6 +36,10 @@ def set_exams(exams):
         if exam == element4:
             applicant[cfg.Header.fields[req_element_4]] = True
     return None
+
+
+def export_results_to_csv():
+    pass
 
 # TODO: add logging to script.
 # TODO: add logic to output dictionary items to a csv.  Reference: https://pythonguides.com/python-dictionary-to-csv/
@@ -110,6 +114,9 @@ def main():
     mb.logout()
     print('Results List')
     print(results)
+    print('Export applicants to csv')
+    export_results_to_csv()
+
 
 if __name__ == '__main__':
     main()
