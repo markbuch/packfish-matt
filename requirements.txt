@@ -1,3 +1,2 @@
 imap-tools==0.44.0
 bs4==0.0.1
-PyYAML~=5.4.1
