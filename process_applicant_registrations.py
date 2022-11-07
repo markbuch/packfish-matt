@@ -68,8 +68,7 @@ def add_certifying_ves_to_applicant_data():
 
 
 # TODO: add logging to script.
-# TODO: add logic to output dictionary items to a csv.  Reference: https://pythonguides.com/python-dictionary-to-csv/
-# TODO: add Certifying VEs to results before outputting to csv.
+
 
 # main code
 def main():
@@ -131,7 +130,7 @@ def main():
             print('=========================')
             print(f'Name: {name}, Value: {value}')
 
-            applicant[cfg.Header.fields[name]] = value
+            applicant[cfg.Header.fields[name]] = value.strip()
         
         # Add certifying VEs to applicant's data.
         add_certifying_ves_to_applicant_data()
