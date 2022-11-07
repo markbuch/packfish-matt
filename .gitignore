@@ -130,3 +130,6 @@ dmypy.json
 
 # PyCharm Project Files
 .idea
+
+# Session Import CSV file
+*.csv
