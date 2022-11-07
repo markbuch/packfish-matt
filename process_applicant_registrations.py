@@ -9,6 +9,7 @@ import datetime
 results = []  # holds a list of applicants retrieved from the email form.
 applicant = {}  # Used to hold applicant data after extracting it from the email form
 fields = list(cfg.Header.fields.values()) # List of column headers for csv file
+CERTIFYING_VES = 'CERTIFYING_VES'
 
 
 # Functions
@@ -36,8 +37,10 @@ def set_exams(exams):
         # if element 3, set element 3 to true
         if exam == element3:
             applicant[cfg.Header.fields[req_element_3]] = True
+            applicant[cfg.Header.fields[req_element_4]] = False
         # if element 4, set element 4 to true
         if exam == element4:
+            applicant[cfg.Header.fields[req_element_3]] = False
             applicant[cfg.Header.fields[req_element_4]] = True
     return None
 
@@ -53,6 +56,16 @@ def export_results_to_csv():
         writer.writeheader()
         for item in results:
             writer.writerow(item)
+
+
+def add_certifying_ves_to_applicant_data():
+    delim = '~'
+    ve1 = cfg.VE.one
+    ve2 = cfg.VE.two
+    ve3 = cfg.VE.three
+
+    applicant[cfg.Header.fields[CERTIFYING_VES]] = ve1 + delim + ve2 + delim + ve3
+
 
 # TODO: add logging to script.
 # TODO: add logic to output dictionary items to a csv.  Reference: https://pythonguides.com/python-dictionary-to-csv/
@@ -119,6 +132,9 @@ def main():
 
             applicant[cfg.Header.fields[name]] = value
         
+        # Add certifying VEs to applicant's data.
+        add_certifying_ves_to_applicant_data()
+
         print('Print applicant data')
         print(applicant)
         print('Add application to results list')
