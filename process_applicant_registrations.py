@@ -1,10 +1,14 @@
 from imap_tools import MailBox, AND
 from bs4 import BeautifulSoup
+from copy import deepcopy
 import config as cfg
+import csv
+import datetime
 
 # define global variables
-results = []
-applicant = {}
+results = []  # holds a list of applicants retrieved from the email form.
+applicant = {}  # Used to hold applicant data after extracting it from the email form
+fields = list(cfg.Header.fields.values()) # List of column headers for csv file
 
 
 # Functions
@@ -39,11 +43,20 @@ def set_exams(exams):
 
 
 def export_results_to_csv():
-    pass
+    print('Enter export results to csv function')
+    print(f'fields: {fields}')
+    print(f'Results: {results}')
+    csv_filename = datetime.datetime.now().strftime("%m%d%Y_%H%M%S") + "_session_import.csv"
+    # open file and write
+    with open(csv_filename, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fields)
+        writer.writeheader()
+        for item in results:
+            writer.writerow(item)
 
 # TODO: add logging to script.
 # TODO: add logic to output dictionary items to a csv.  Reference: https://pythonguides.com/python-dictionary-to-csv/
-
+# TODO: add Certifying VEs to results before outputting to csv.
 
 # main code
 def main():
@@ -105,10 +118,12 @@ def main():
             print(f'Name: {name}, Value: {value}')
 
             applicant[cfg.Header.fields[name]] = value
-    print('Print applicant data')
-    print(applicant)
-    print('Add application to results list')
-    results.append(applicant)
+        
+        print('Print applicant data')
+        print(applicant)
+        print('Add application to results list')
+        results.append(deepcopy(applicant))
+        applicant.clear()
 
     # Logout of mailbox
     mb.logout()
