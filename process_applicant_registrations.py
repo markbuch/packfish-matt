@@ -122,8 +122,9 @@ def main():
                 value = ''
                 applicant[cfg.Header.fields['UPGRADE_LICENSE']] = False
             elif name == 'Callsign' and value.isalnum():
-                # If a callsign was entered, set UPGRADE_LICENSE to True
+                # If a callsign was entered, set UPGRADE_LICENSE to True and convert callsign to upper case
                 applicant[cfg.Header.fields['UPGRADE_LICENSE']] = True
+                value = value.upper()
             elif name == 'Exams':
                 set_exams(value.split(', '))
 
