@@ -86,9 +86,10 @@ def main():
     messages = mb.fetch(criteria=AND(from_="burst@emailmeform.com", seen=False), mark_seen=False, bulk=True)
 
     # Start processing retrieved applications
-    logging.info('Message process started...')
+    logging.info('Application processing started...')
+    logging.info('Processing first applicant')
     for msg in messages:
-        logging.info('Processing next applicant')
+        # logging.info('Processing next applicant')
         # parse html email message
         bs = BeautifulSoup(msg.html, 'html.parser')
         # emailme form data resides in a html table.
@@ -155,6 +156,7 @@ def main():
         logging.info('Adding applicant to results file.')
         results.append(deepcopy(applicant))
         applicant.clear()
+        logging.info('Processing next applicant')
 
     # Logout of mailbox
     logging.info('Logging out of Mailbox.')
