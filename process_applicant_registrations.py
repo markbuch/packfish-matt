@@ -67,9 +67,9 @@ def export_results_to_csv():
 
 def add_certifying_ves_to_applicant_data():
     delim = '~'
-    ve1 = cfg.VE.one
-    ve2 = cfg.VE.two
-    ve3 = cfg.VE.three
+    ve1 = cfg.VE.one.upper()
+    ve2 = cfg.VE.two.upper()
+    ve3 = cfg.VE.three.upper()
 
     applicant[cfg.Header.fields[CERTIFYING_VES]] = ve1 + delim + ve2 + delim + ve3
 
