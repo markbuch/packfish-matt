@@ -133,3 +133,6 @@ dmypy.json
 
 # Session Import CSV file
 *.csv
+
+# Information 
+/info
