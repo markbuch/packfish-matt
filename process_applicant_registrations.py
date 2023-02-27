@@ -35,18 +35,23 @@ def set_exams(exams):
 
     # loop through each exam and set corresponding element name and value.
     for exam in exams:
-        if exam == element2:
-            # if element 2, set element 3 and 4 to false
+        
+        if exam == element2 and exams.count("Element") == 1:
             applicant[cfg.Header.fields[req_element_3]] = False
             applicant[cfg.Header.fields[req_element_4]] = False
-        # if element 3, set element 3 to true
-        if exam == element3:
+        elif exam == element3:
             applicant[cfg.Header.fields[req_element_3]] = True
             applicant[cfg.Header.fields[req_element_4]] = False
-        # if element 4, set element 4 to true
-        if exam == element4:
+        elif exam == element4 and exams.count("Element") == 1:
             applicant[cfg.Header.fields[req_element_3]] = False
             applicant[cfg.Header.fields[req_element_4]] = True
+        elif exam == element4 and exams.count("Element") > 1:
+            applicant[cfg.Header.fields[req_element_4]] = True
+        else:
+            applicant[cfg.Header.fields[req_element_3]] = False
+            applicant[cfg.Header.fields[req_element_4]] = False
+            
+        
     return None
 
 
@@ -74,16 +79,13 @@ def add_certifying_ves_to_applicant_data():
     applicant[cfg.Header.fields[CERTIFYING_VES]] = ve1 + delim + ve2 + delim + ve3
 
 
-# TODO: add logging to script.
-
-
 # main code
 def main():
     logging.info(f'Logging into Mail Server: {cfg.Mail.server}.')
     mb = MailBox(cfg.Mail.server).login(cfg.Mail.user, cfg.Mail.password)
 
     logging.info('Fetching application registration forms from mail server.')
-    messages = mb.fetch(criteria=AND(from_="burst@emailmeform.com", seen=False), mark_seen=False, bulk=True)
+    messages = mb.fetch(criteria=AND(from_="burst@emailmeform.com", seen=False), mark_seen=True, bulk=True)
 
     # Start processing retrieved applications
     logging.info('Application processing started...')
@@ -97,6 +99,7 @@ def main():
         table_rows = bs.find('table').findAll('tr')
         # process each row to get the table data.
         for row in table_rows:
+            print(f'row: {row}')
             name = ""
             value = ""
             td = row.findAll('td')
