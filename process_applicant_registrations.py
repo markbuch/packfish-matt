@@ -35,17 +35,17 @@ def set_exams(exams):
 
     # loop through each exam and set corresponding element name and value.
     for exam in exams:
-        
-        if exam == element2 and exams.count("Element") == 1:
+        print(f'exam is: {exam}')
+        if exam == element2 and len(exams)== 1:
             applicant[cfg.Header.fields[req_element_3]] = False
             applicant[cfg.Header.fields[req_element_4]] = False
         elif exam == element3:
             applicant[cfg.Header.fields[req_element_3]] = True
             applicant[cfg.Header.fields[req_element_4]] = False
-        elif exam == element4 and exams.count("Element") == 1:
+        elif exam == element4 and len(exams) == 1:
             applicant[cfg.Header.fields[req_element_3]] = False
             applicant[cfg.Header.fields[req_element_4]] = True
-        elif exam == element4 and exams.count("Element") > 1:
+        elif exam == element4 and len(exams) > 1:
             applicant[cfg.Header.fields[req_element_4]] = True
         else:
             applicant[cfg.Header.fields[req_element_3]] = False
@@ -119,37 +119,41 @@ def main():
             if name == 'Middle Initial' and value.upper() == 'NONE':
                 # If Middle Initial is NONE, set value to empty string
                 logging.info('Middle Initial was set to NONE, replacing with empty string')
-                value = ''
+                applicant[cfg.Header.fields[name]] = ''
             elif name == 'Suffix' and value.upper() == 'NONE':
                 # If Suffix is NONE, set value to empty string
                 logging.info('Suffix was set to NONE, replacing with empty string')
-                value = ''
+                applicant[cfg.Header.fields[name]] = ''
             elif name == 'Street Address' and value.find('PO') == -1:
                 # If not a PO Box, add empty PO Box entry
+                applicant[cfg.Header.fields[name]] = value
                 applicant[cfg.Header.fields['PO Box']] = ''
             elif name == 'Street Address' and value.find('PO') != -1:
                 # If PO Box, set Street Address(value) to empty string and add PO_BOX
                 applicant[cfg.Header.fields['PO Box']] = value
-                value = ''
+                applicant[cfg.Header.fields[name]] = ''
             elif name == 'Callsign' and value.upper() == 'NOCALL':
                 # If callsign is NOCALL, set Callsign value to empty string and set UPGRADE_LICENSE to False
                 logging.info('Callsign was sent to NONE, replacing with empty string.')
-                value = ''
+                applicant[cfg.Header.fields[name]] = ''
                 applicant[cfg.Header.fields['UPGRADE_LICENSE']] = False
             elif name == 'Callsign' and value.isalnum():
                 # If a callsign was entered, set UPGRADE_LICENSE to True and convert callsign to upper case
                 logging.info(f'Callsign: {value.strip()} was detected, setting UPGRADE_LICENSE to true.')
                 applicant[cfg.Header.fields['UPGRADE_LICENSE']] = True
-                value = value.upper()
+                applicant[cfg.Header.fields[name]] = value.upper()
             elif name == 'Exams':
+                # Add exams to applicant data
                 set_exams(value.split(', '))
+                # add exams to Notes field
+                applicant[cfg.Header.fields[name]] = value
+            else:
+                applicant[cfg.Header.fields[name]] = value
 
             logging.info(f'Name: {name}, Value: {value}')
             logging.info('-' * 40)
 
-            applicant[cfg.Header.fields[name]] = value.strip()
-        
-        
+         
         # Default PREVIOUS_APPLICATION to No
         applicant[cfg.Header.fields['PREVIOUS_APPLICATION']] = 'No'
         # Add certifying VEs to applicant's data.
