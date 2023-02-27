@@ -149,6 +149,9 @@ def main():
 
             applicant[cfg.Header.fields[name]] = value.strip()
         
+        
+        # Default PREVIOUS_APPLICATION to No
+        applicant[cfg.Header.fields['PREVIOUS_APPLICATION']] = 'No'
         # Add certifying VEs to applicant's data.
         add_certifying_ves_to_applicant_data()
         logging.info('Printing Applicant data...\n')
