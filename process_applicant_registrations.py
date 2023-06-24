@@ -24,11 +24,6 @@ def set_exams(exams):
     # If element 3 and/or element 4 are selected, these selections should show up on the Applicant's
     # registration form in Session Manager.
 
-    # define form field names
-    element2 = 'Element 2 (Technician)'
-    element3 = 'Element 3 (General)'
-    element4 = 'Element 4 (Amateur Extra)'
-
     # Define column heading names to be used with the csv file.
     req_element_3 = 'REQUESTED_ELEMENT_3'
     req_element_4 = 'REQUESTED_ELEMENT_4'
@@ -36,22 +31,21 @@ def set_exams(exams):
     # loop through each exam and set corresponding element name and value.
     for exam in exams:
         print(f'exam is: {exam}')
-        if exam == element2 and len(exams)== 1:
-            applicant[cfg.Header.fields[req_element_3]] = False
-            applicant[cfg.Header.fields[req_element_4]] = False
-        elif exam == element3:
-            applicant[cfg.Header.fields[req_element_3]] = True
-            applicant[cfg.Header.fields[req_element_4]] = False
-        elif exam == element4 and len(exams) == 1:
-            applicant[cfg.Header.fields[req_element_3]] = False
-            applicant[cfg.Header.fields[req_element_4]] = True
-        elif exam == element4 and len(exams) > 1:
-            applicant[cfg.Header.fields[req_element_4]] = True
-        else:
-            applicant[cfg.Header.fields[req_element_3]] = False
-            applicant[cfg.Header.fields[req_element_4]] = False
-            
-        
+        match exam:
+            case 'Element 2 (Technician)':
+                if len(exams) == 1:
+                    applicant[cfg.Header.fields[req_element_3]] = False
+                    applicant[cfg.Header.fields[req_element_4]] = False
+            case 'Element 3 (General)':
+                applicant[cfg.Header.fields[req_element_3]] = True
+                applicant[cfg.Header.fields[req_element_4]] = False
+            case 'Element 4 (Amateur Extra)':
+                if len(exams) == 1:
+                    applicant[cfg.Header.fields[req_element_3]] = False
+                    applicant[cfg.Header.fields[req_element_4]] = True
+                else:
+                    applicant[cfg.Header.fields[req_element_4]] = True
+
     return None
 
 
@@ -85,7 +79,7 @@ def main():
     mb = MailBox(cfg.Mail.server).login(cfg.Mail.user, cfg.Mail.password)
 
     logging.info('Fetching application registration forms from mail server.')
-    messages = mb.fetch(criteria=AND(from_="burst@emailmeform.com", seen=False), mark_seen=True, bulk=True)
+    messages = mb.fetch(criteria=AND(from_="burst@emailmeform.com", seen=False), mark_seen=False, bulk=True)
 
     # Start processing retrieved applications
     logging.info('Application processing started...')
@@ -116,44 +110,63 @@ def main():
                     value = item.text.strip()
             # before adding the name/value pair to the applicant dict, check for required modifications.
             logging.info(f'Performing pre-checks on: {name}, {value} ')
-            if name == 'Middle Initial' and value.upper() == 'NONE':
-                # If Middle Initial is NONE, set value to empty string
-                logging.info('Middle Initial was set to NONE, replacing with empty string')
-                applicant[cfg.Header.fields[name]] = ''
-            elif name == 'Suffix' and value.upper() == 'NONE':
-                # If Suffix is NONE, set value to empty string
-                logging.info('Suffix was set to NONE, replacing with empty string')
-                applicant[cfg.Header.fields[name]] = ''
-            elif name == 'Street Address' and value.find('PO') == -1:
-                # If not a PO Box, add empty PO Box entry
-                applicant[cfg.Header.fields[name]] = value
-                applicant[cfg.Header.fields['PO Box']] = ''
-            elif name == 'Street Address' and value.find('PO') != -1:
-                # If PO Box, set Street Address(value) to empty string and add PO_BOX
-                applicant[cfg.Header.fields['PO Box']] = value
-                applicant[cfg.Header.fields[name]] = ''
-            elif name == 'Callsign' and value.upper() == 'NOCALL':
-                # If callsign is NOCALL, set Callsign value to empty string and set UPGRADE_LICENSE to False
-                logging.info('Callsign was sent to NONE, replacing with empty string.')
-                applicant[cfg.Header.fields[name]] = ''
-                applicant[cfg.Header.fields['UPGRADE_LICENSE']] = False
-            elif name == 'Callsign' and value.isalnum():
-                # If a callsign was entered, set UPGRADE_LICENSE to True and convert callsign to upper case
-                logging.info(f'Callsign: {value.strip()} was detected, setting UPGRADE_LICENSE to true.')
-                applicant[cfg.Header.fields['UPGRADE_LICENSE']] = True
-                applicant[cfg.Header.fields[name]] = value.upper()
-            elif name == 'Exams':
-                # Add exams to applicant data
-                set_exams(value.split(', '))
-                # add exams to Notes field
-                applicant[cfg.Header.fields[name]] = value
-            else:
-                applicant[cfg.Header.fields[name]] = value
+
+            match name:
+                case 'Middle Initial':
+                    if value.upper() == 'NONE':
+                        # If Middle Initial is NONE, set value to empty string
+                        logging.info('Middle Initial was set to NONE, replacing with empty string')
+                        applicant[cfg.Header.fields[name]] = ''
+                case 'Suffix':
+                    if value.upper() == 'NONE':
+                        # If Suffix is NONE, set value to empty string
+                        logging.info('Suffix was set to NONE, replacing with empty string')
+                        applicant[cfg.Header.fields[name]] = ''
+                case 'Street Address':
+                    if value.find('PO') == -1:
+                        # Not a PO Box, add empty PO Box entry
+                        applicant[cfg.Header.fields[name]] = value
+                        applicant[cfg.Header.fields['PO Box']] = ''
+                    else:
+                        # PO Box, set Street Address(value) to empty string and add PO_BOX
+                        applicant[cfg.Header.fields['PO Box']] = value
+                        applicant[cfg.Header.fields[name]] = ''
+                case 'Callsign':
+                    if value.upper() == 'NOCALL':
+                        # If callsign is NOCALL, set Callsign value to empty string and set UPGRADE_LICENSE to False
+                        logging.info('Callsign was sent to NONE, replacing with empty string.')
+                        applicant[cfg.Header.fields[name]] = ''
+                        applicant[cfg.Header.fields['UPGRADE_LICENSE']] = False
+                    elif value.isalnum():
+                        # If a callsign was entered, set UPGRADE_LICENSE to True and convert callsign to upper case
+                        logging.info(f'Callsign: {value.strip()} was detected, setting UPGRADE_LICENSE to true.')
+                        applicant[cfg.Header.fields['UPGRADE_LICENSE']] = True
+                        applicant[cfg.Header.fields[name]] = value.upper()
+                    else:
+                        # callsign was entered wrong, needs checked
+                        applicant[cfg.Header.fields[name]] = 'ERROR'
+                        applicant[cfg.Header.fields['UPGRADE_LICENSE']] = False
+                case 'Exams':
+                    # Add exams to applicant data
+                    set_exams(value.split(', '))
+                    # add exams to Notes field
+                    applicant[cfg.Header.fields[name]] = value
+                case 'City':
+                    # Correct formatting.  Capitalize first letter only.
+                    logging.info(f'Converting City: {value.strip()} to capitalize first letter only.')
+                    applicant[cfg.Header.fields[name]] = value.lower().capitalize()
+                case 'State':
+                    # Convert state to all upper case.
+                    logging.info(f'Converting State: {value.strip()} to upper case.')
+                    applicant[cfg.Header.fields[name]] = value.upper()
+                case other:
+                    # No changes needed, write current values
+                    logging.info(f'{value} : No changes were needed.')
+                    applicant[cfg.Header.fields[name]] = value
 
             logging.info(f'Name: {name}, Value: {value}')
             logging.info('-' * 40)
 
-         
         # Default PREVIOUS_APPLICATION to No
         applicant[cfg.Header.fields['PREVIOUS_APPLICATION']] = 'No'
         # Add certifying VEs to applicant's data.
