@@ -79,7 +79,7 @@ def main():
     mb = MailBox(cfg.Mail.server).login(cfg.Mail.user, cfg.Mail.password)
 
     logging.info('Fetching application registration forms from mail server.')
-    messages = mb.fetch(criteria=AND(from_="burst@emailmeform.com", seen=False), mark_seen=False, bulk=True)
+    messages = mb.fetch(criteria=AND(from_="burst@emailmeform.com", seen=False), mark_seen=True, bulk=True)
 
     # Start processing retrieved applications
     logging.info('Application processing started...')
